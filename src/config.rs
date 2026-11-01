@@ -1,4 +1,4 @@
-//! Persistent application state stored in `%APPDATA%\LinkVault\config.toml`.
+//! Persistent application state stored in `%APPDATA%\PathMover\config.toml`.
 
 use std::path::{Path, PathBuf};
 
@@ -8,7 +8,7 @@ use crate::util;
 
 pub const CONFIG_VERSION: u32 = 1;
 
-/// One folder that LinkVault moved from C: to another drive.
+/// One folder that PathMover moved from C: to another drive.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MovedEntry {
     /// `Local` or `Roaming`.
@@ -108,16 +108,16 @@ fn drive_type(_root: &str) -> u32 {
 }
 
 impl Config {
-    /// `%APPDATA%\LinkVault\config.toml`, falling back to the exe folder.
+    /// `%APPDATA%\PathMover\config.toml`, falling back to the exe folder.
     pub fn path() -> PathBuf {
         if let Some(appdata) = std::env::var_os("APPDATA") {
-            return PathBuf::from(appdata).join("LinkVault").join("config.toml");
+            return PathBuf::from(appdata).join("PathMover").join("config.toml");
         }
         std::env::current_exe()
             .ok()
             .and_then(|p| p.parent().map(Path::to_path_buf))
             .unwrap_or_else(|| PathBuf::from("."))
-            .join("linkvault-config.toml")
+            .join("pathmover-config.toml")
     }
 
     /// Load the config, returning defaults plus a warning on failure.

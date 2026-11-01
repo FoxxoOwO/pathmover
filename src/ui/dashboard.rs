@@ -4,11 +4,11 @@ use eframe::egui;
 
 use super::theme::*;
 use super::widgets;
-use crate::app::LinkVaultApp;
+use crate::app::PathMoverApp;
 use crate::util;
 use crate::winapi;
 
-pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+pub fn ui(app: &mut PathMoverApp, ui: &mut egui::Ui) {
     egui::ScrollArea::vertical()
         .auto_shrink([false, false])
         .show(ui, |ui| {
@@ -49,7 +49,7 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
         });
 }
 
-fn admin_banner(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+fn admin_banner(app: &mut PathMoverApp, ui: &mut egui::Ui) {
     egui::Frame::new()
         .fill(WARN.gamma_multiply(0.12))
         .stroke(egui::Stroke::new(1.0, WARN.gamma_multiply(0.6)))
@@ -92,7 +92,7 @@ fn admin_banner(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
         });
 }
 
-fn summary_row(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+fn summary_row(app: &mut PathMoverApp, ui: &mut egui::Ui) {
     let system = app.system_disk().cloned();
     let moved_total = app.config.total_moved_bytes();
     let cache_total: u64 = app.caches.iter().map(|c| c.size).sum();
@@ -153,7 +153,7 @@ fn summary_row(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
     }
 }
 
-fn disk_card(app: &mut LinkVaultApp, ui: &mut egui::Ui, disk: &crate::app::DiskInfo) {
+fn disk_card(app: &mut PathMoverApp, ui: &mut egui::Ui, disk: &crate::app::DiskInfo) {
     let used = disk.total.saturating_sub(disk.free);
     let frac = if disk.total > 0 {
         used as f32 / disk.total as f32
@@ -230,7 +230,7 @@ fn disk_card(app: &mut LinkVaultApp, ui: &mut egui::Ui, disk: &crate::app::DiskI
     });
 }
 
-fn target_settings(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+fn target_settings(app: &mut PathMoverApp, ui: &mut egui::Ui) {
     widgets::card(ui, |ui| {
         ui.horizontal(|ui| {
             ui.label(egui::RichText::new("Cesta:").size(12.5).color(MUTED));
@@ -294,7 +294,7 @@ fn target_settings(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
     });
 }
 
-fn quick_actions(app: &mut LinkVaultApp, ui: &mut egui::Ui, ctx: egui::Context) {
+fn quick_actions(app: &mut PathMoverApp, ui: &mut egui::Ui, ctx: egui::Context) {
     widgets::card(ui, |ui| {
         ui.horizontal_wrapped(|ui| {
             let busy = app.busy();

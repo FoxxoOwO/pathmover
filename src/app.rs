@@ -15,7 +15,7 @@ use crate::scanner::{self, FolderEntry, ScanProgress, Scope};
 use crate::util;
 use crate::winapi;
 
-pub const APP_NAME: &str = "LinkVault";
+pub const APP_NAME: &str = "PathMover";
 pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -156,7 +156,7 @@ pub struct ConfirmRestore {
     pub delete_target: bool,
 }
 
-pub struct LinkVaultApp {
+pub struct PathMoverApp {
     pub config: Config,
     pub tab: Tab,
     pub folders: Vec<FolderEntry>,
@@ -183,7 +183,7 @@ pub struct LinkVaultApp {
     pub scanned_once: bool,
 }
 
-impl LinkVaultApp {
+impl PathMoverApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         Self::new_with_ctx(&cc.egui_ctx)
     }
@@ -231,7 +231,7 @@ impl LinkVaultApp {
         app.log_push(
             LogKind::Info,
             format!(
-                "LinkVault {APP_VERSION} spuštěn{}",
+                "PathMover {APP_VERSION} spuštěn{}",
                 if app.is_admin {
                     " (zvýšená oprávnění)"
                 } else {
@@ -859,13 +859,13 @@ fn clock_now() -> String {
     format!("{h:02}:{m:02}:{s:02}")
 }
 
-impl eframe::App for LinkVaultApp {
+impl eframe::App for PathMoverApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         self.draw(ui);
     }
 }
 
-impl LinkVaultApp {
+impl PathMoverApp {
     /// Draw one frame into `ui`. Separated from the `eframe::App` impl so the
     /// layout can be driven from tests without an `eframe::Frame`.
     pub fn draw(&mut self, ui: &mut egui::Ui) {

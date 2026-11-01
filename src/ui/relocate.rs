@@ -6,7 +6,7 @@ use eframe::egui;
 
 use super::theme::*;
 use super::widgets;
-use crate::app::{ConfirmMove, ConfirmRestore, LinkVaultApp, SortMode};
+use crate::app::{ConfirmMove, ConfirmRestore, PathMoverApp, SortMode};
 use crate::config::MovedEntry;
 use crate::scanner::{FolderEntry, FolderState, Scope};
 use crate::util;
@@ -20,7 +20,7 @@ enum RowAction {
     Open(PathBuf),
 }
 
-pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+pub fn ui(app: &mut PathMoverApp, ui: &mut egui::Ui) {
     toolbar(app, ui);
     ui.add_space(6.0);
 
@@ -98,7 +98,7 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
     history_section(app, ui);
 }
 
-fn toolbar(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+fn toolbar(app: &mut PathMoverApp, ui: &mut egui::Ui) {
     let ctx = ui.ctx().clone();
     widgets::card(ui, |ui| {
         ui.horizontal_wrapped(|ui| {
@@ -217,7 +217,7 @@ fn header_cell(ui: &mut egui::Ui, text: &str, width: f32) {
 /// Render one folder row. Columns mirror `table_header` so everything lines up.
 fn folder_row(
     ui: &mut egui::Ui,
-    app: &LinkVaultApp,
+    app: &PathMoverApp,
     folder: &FolderEntry,
     pending: &mut Option<RowAction>,
 ) {
@@ -370,7 +370,7 @@ fn folder_row(
 }
 
 fn apply_action(
-    app: &mut LinkVaultApp,
+    app: &mut PathMoverApp,
     ui: &mut egui::Ui,
     ctx: &egui::Context,
     action: RowAction,
@@ -406,7 +406,7 @@ fn apply_action(
 }
 
 /// Recorded moves from config.toml (also serves as a rollback list).
-fn history_section(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+fn history_section(app: &mut PathMoverApp, ui: &mut egui::Ui) {
     if app.config.entries.is_empty() {
         return;
     }

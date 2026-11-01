@@ -20,7 +20,7 @@ pub const WARN: egui::Color32 = egui::Color32::from_rgb(226, 164, 61);
 pub const ERROR: egui::Color32 = egui::Color32::from_rgb(248, 81, 73);
 pub const TRACK: egui::Color32 = egui::Color32::from_rgb(16, 21, 28);
 
-/// Install the LinkVault theme into an egui context.
+/// Install the PathMover theme into an egui context.
 pub fn install(ctx: &egui::Context) {
     install_fonts(ctx);
     ctx.set_theme(egui::ThemePreference::Dark);

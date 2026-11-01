@@ -4,11 +4,11 @@ use eframe::egui;
 
 use super::theme::*;
 use super::widgets as w;
-use crate::app::{LinkVaultApp, LogKind};
+use crate::app::{LogKind, PathMoverApp};
 use crate::util;
 use crate::winapi;
 
-pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+pub fn ui(app: &mut PathMoverApp, ui: &mut egui::Ui) {
     let ctx = ui.ctx().clone();
     let busy = app.busy();
 

@@ -254,7 +254,7 @@ mod tests {
 
     #[test]
     fn empties_directory_but_keeps_it() {
-        let base = std::env::temp_dir().join("linkvault-test-empty-dir");
+        let base = std::env::temp_dir().join("pathmover-test-empty-dir");
         let _ = std::fs::remove_dir_all(&base);
         std::fs::create_dir_all(base.join("sub")).unwrap();
         std::fs::write(base.join("sub/a"), b"12345").unwrap();

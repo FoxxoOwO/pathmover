@@ -146,7 +146,7 @@ pub fn move_folder(
 
     if !scanner::is_under_appdata(source) {
         return Err(format!(
-            "{} není v AppData - LinkVault přesouvá jen AppData",
+            "{} není v AppData - PathMover přesouvá jen AppData",
             source.display()
         ));
     }
@@ -402,7 +402,7 @@ pub fn restore(
     // ---- copy data to a sibling temp folder ------------------------------
     let parent = source.parent().unwrap_or_else(|| Path::new("."));
     let temp = parent.join(format!(
-        ".linkvault-restore-{}",
+        ".pathmover-restore-{}",
         util::sanitize_component(&entry.name)
     ));
     fsutil::remove_tree_quiet(&temp);
@@ -524,7 +524,7 @@ mod tests {
 
     #[test]
     fn backup_paths_avoid_collisions() {
-        let base = std::env::temp_dir().join("linkvault-test-backup");
+        let base = std::env::temp_dir().join("pathmover-test-backup");
         let _ = std::fs::remove_dir_all(&base);
         std::fs::create_dir_all(base.join("App")).unwrap();
         assert_eq!(backup_path(&base.join("App")), base.join("App.bak"));

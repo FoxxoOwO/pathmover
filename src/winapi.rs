@@ -1,8 +1,8 @@
-//! Thin, safe wrappers around the Windows APIs LinkVault needs:
+//! Thin, safe wrappers around the Windows APIs PathMover needs:
 //! NTFS directory junctions (reparse points), elevation and free space.
 //!
 //! Junctions (mount points) do **not** require administrator rights, unlike
-//! ordinary symlinks, which is why LinkVault builds them itself with
+//! ordinary symlinks, which is why PathMover builds them itself with
 //! `FSCTL_SET_REPARSE_POINT` instead of calling `CreateSymbolicLinkW`.
 
 #![cfg(windows)]
@@ -367,7 +367,7 @@ pub fn is_elevated() -> bool {
     unsafe { IsUserAnAdmin() != 0 }
 }
 
-/// Relaunch LinkVault through the UAC prompt. Returns true when the new
+/// Relaunch PathMover through the UAC prompt. Returns true when the new
 /// process was started (the caller should exit afterwards).
 pub fn relaunch_as_admin() -> bool {
     let Ok(exe) = std::env::current_exe() else {
@@ -407,7 +407,7 @@ mod tests {
 
     #[test]
     fn junction_roundtrip() {
-        let base = std::env::temp_dir().join("linkvault-test-junction");
+        let base = std::env::temp_dir().join("pathmover-test-junction");
         let _ = std::fs::remove_dir_all(&base);
         let target = base.join("target");
         let link = base.join("link");

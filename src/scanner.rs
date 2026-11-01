@@ -47,7 +47,7 @@ impl Scope {
 /// Where a folder currently lives.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FolderState {
-    /// A normal directory on C: that LinkVault can relocate.
+    /// A normal directory on C: that PathMover can relocate.
     Local,
     /// A junction pointing at another drive.
     Junction {
@@ -95,17 +95,17 @@ pub struct FolderEntry {
     pub size: u64,
     pub files: u64,
     pub state: FolderState,
-    /// Matching record from config.toml (LinkVault moved it).
+    /// Matching record from config.toml (PathMover moved it).
     pub managed: Option<MovedEntry>,
 }
 
 impl FolderEntry {
-    /// Can LinkVault move it right now?
+    /// Can PathMover move it right now?
     pub fn can_move(&self) -> bool {
         self.state.is_local()
     }
 
-    /// Can LinkVault bring it back to C:?
+    /// Can PathMover bring it back to C:?
     pub fn can_restore(&self) -> bool {
         self.managed.is_some() && self.state.is_moved()
     }
@@ -148,7 +148,7 @@ pub fn appdata_roots() -> Vec<(Scope, PathBuf)> {
 }
 
 /// True when `path` lives inside one of the AppData branches (safety guard:
-/// LinkVault must never touch anything else).
+/// PathMover must never touch anything else).
 pub fn is_under_appdata(path: &Path) -> bool {
     appdata_roots()
         .iter()
@@ -309,7 +309,7 @@ mod tests {
 
     #[test]
     fn local_directories_are_classified() {
-        let dir = std::env::temp_dir().join("linkvault-test-classify");
+        let dir = std::env::temp_dir().join("pathmover-test-classify");
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         assert_eq!(classify(&dir), FolderState::Local);

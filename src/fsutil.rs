@@ -305,8 +305,8 @@ pub fn remove_tree_quiet(path: &Path) {
 
 /// Writes a temporary marker file inside `dir` to prove that a link works.
 pub fn link_probe(dir: &Path) -> io::Result<()> {
-    let probe = dir.join(".linkvault_probe");
-    std::fs::write(&probe, b"linkvault")?;
+    let probe = dir.join(".pathmover_probe");
+    std::fs::write(&probe, b"pathmover")?;
     let ok = probe.is_file();
     let _ = std::fs::remove_file(&probe);
     if ok {
@@ -322,7 +322,7 @@ mod tests {
 
     #[test]
     fn copying_and_removing_trees() {
-        let base = std::env::temp_dir().join("linkvault-test-copytree");
+        let base = std::env::temp_dir().join("pathmover-test-copytree");
         let _ = std::fs::remove_dir_all(&base);
         let src = base.join("src");
         std::fs::create_dir_all(src.join("nested/deeper")).unwrap();
@@ -347,7 +347,7 @@ mod tests {
 
     #[test]
     fn covers_size_measurement() {
-        let base = std::env::temp_dir().join("linkvault-test-size");
+        let base = std::env::temp_dir().join("pathmover-test-size");
         let _ = std::fs::remove_dir_all(&base);
         std::fs::create_dir_all(base.join("x")).unwrap();
         std::fs::write(base.join("x/file"), vec![b'z'; 42]).unwrap();

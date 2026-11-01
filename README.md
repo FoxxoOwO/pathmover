@@ -1,6 +1,6 @@
-# LinkVault
+# PathMover
 
-**LinkVault** (dříve *AppRelocator*) je nativní desktopová aplikace pro Windows 10/11, která uvolňuje
+**PathMover** (dříve *LinkVault* / *AppRelocator*) je nativní desktopová aplikace pro Windows 10/11, která uvolňuje
 místo na systémovém disku `C:` dvěma způsoby:
 
 1. **Přesouvá těžké složky z `AppData`** na jiný disk (D:, E:, …) a na jejich původním místě zanechá
@@ -95,7 +95,7 @@ Přesun není `move` — je to transakce s ověřením v každém kroku a rollba
 5. **Vytvoření junction** přes `DeviceIoControl(FSCTL_SET_REPARSE_POINT)` s tagem
    `IO_REPARSE_TAG_MOUNT_POINT`; pokud selže, použije se fallback `cmd /C mklink /J`.
 6. **Ověření odkazu** – přečtení cíle přes `FSCTL_GET_REPARSE_POINT`, porovnání cest
-   a zápis/čtení testovacího souboru `.linkvault_probe` skrz odkaz.
+   a zápis/čtení testovacího souboru `.pathmover_probe` skrz odkaz.
 7. **Úklid** – smazání `.bak` (nebo jeho ponechání, pokud je zapnuté *Ponechat .bak zálohu*).
 8. **Zápis do `config.toml`** – aplikace si pamatuje, co kam přesunula.
 
@@ -104,7 +104,7 @@ Kdykoli mezi kroky 4–7 dojde k chybě, běží **rollback**: smazání neúpln
 zůstane v konzistentním stavu.
 
 **Rollback (Vrátit na C:)** probíhá stejně obezřetně: kopie do dočasné složky
-`.linkvault-restore-<název>` vedle originálu → ověření → odstranění junction → přejmenování na originál.
+`.pathmover-restore-<název>` vedle originálu → ověření → odstranění junction → přejmenování na originál.
 Když se cokoli pokazí, junction se znovu vytvoří a data zůstanou dostupná.
 
 ---
@@ -144,15 +144,15 @@ jen při kompilaci, ne při běhu aplikace.
 ## Sestavení a spuštění
 
 ```powershell
-git clone <repo> linkvault
-cd linkvault
+git clone <repo> pathmover
+cd pathmover
 
 # vývojový build
 cargo run
 
 # release build (optimalizováno, stripped)
 cargo build --release
-.\target\release\linkvault.exe
+.\target\release\pathmover.exe
 ```
 
 Testy:
@@ -166,13 +166,13 @@ cargo test
 Doporučená cesta je z terminálu spuštěného jako administrátor:
 
 ```powershell
-Start-Process -Verb RunAs .\target\release\linkvault.exe
+Start-Process -Verb RunAs .\target\release\pathmover.exe
 ```
 
 Nebo z UI: pokud aplikace neběží elevovaně, zobrazí se banner s tlačítkem
 **Restartovat jako správce** (spustí novou instanci a stávající okno zavřete).
 
-Trvalou elevaci lze vynutit přidáním manifestu `linkvault.exe.manifest` s
+Trvalou elevaci lze vynutit přidáním manifestu `pathmover.exe.manifest` s
 `requestedExecutionLevel level="requireAdministrator"` (viz [Stav projektu](#stav-projektu)).
 
 ---
@@ -205,7 +205,7 @@ Architektura: UI běží v hlavním vlákně, každá dlouhá operace (sken, kop
 
 ## Konfigurace
 
-Ukládá se do `%APPDATA%\LinkVault\config.toml`:
+Ukládá se do `%APPDATA%\PathMover\config.toml`:
 
 ```toml
 version = 1
@@ -256,7 +256,7 @@ Soubor se vytvoří při prvním uložení (změna cíle, přesun, rollback). P�
 - Aplikace záměrně **nemaže** data bez potvrzení a nikdy nemaže obsah, který leží mimo `AppData`.
 
 > ⚠️ Přesun složek v AppData je zásah do systému. Před prvním použitím si udělejte bod obnovení
-> (`Checkpoint-Computer -Description "Před LinkVault"`) nebo zálohu.
+> (`Checkpoint-Computer -Description "Před PathMover"`) nebo zálohu.
 
 ---
 
@@ -274,7 +274,7 @@ Soubor se vytvoří při prvním uložení (změna cíle, přesun, rollback). P�
 | UI zamrzlé | čeká na dokončení operace | použijte *Zrušit*, operace se ukončí po aktuálním souboru |
 | `error calling dlltool 'dlltool.exe': program not found` | Windows-GNU toolchain bez MinGW-w64 | přidejte `C:\tools\mingw64\bin` (WinLibs) do `PATH`, viz *Toolchain* |
 | `dlltool could not create import library` | chybí assembler `as` pro `raw-dylib` | totéž — dlltool volá `as`, samotný rustup ho nedodá |
-| `compile_error!("LinkVault is a Windows-only application…")` | build na Linuxu/macOS | projekt cílí na Windows 10/11 |
+| `compile_error!("PathMover is a Windows-only application…")` | build na Linuxu/macOS | projekt cílí na Windows 10/11 |
 
 Logy a chybové zprávy jsou v panelu **Log** ve spodní části okna (lze rozbalit).
 
