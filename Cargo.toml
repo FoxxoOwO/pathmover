@@ -1,0 +1,32 @@
+[package]
+name = "linkvault"
+version = "0.1.0"
+edition = "2021"
+description = "LinkVault - move heavy AppData folders to another drive with NTFS junctions"
+authors = ["LinkVault"]
+
+[dependencies]
+eframe = { version = "0.37", default-features = false, features = ["default_fonts", "glow"] }
+egui = "0.37"
+walkdir = "2.5"
+rayon = "1.12"
+sysinfo = "0.40"
+serde = { version = "1", features = ["derive"] }
+toml = "1"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+    "Win32_System_IO",
+    "Win32_System_Threading",
+    "Win32_Security",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_SystemInformation",
+] }
+
+[profile.release]
+opt-level = 2
+lto = "thin"
+strip = true
