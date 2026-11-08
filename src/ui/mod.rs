@@ -13,11 +13,11 @@ use eframe::egui;
 use theme::*;
 use widgets as w;
 
-use crate::app::{ConfirmRestore, PathMoverApp, Tab};
+use crate::app::{ConfirmRestore, LinkVaultApp, Tab};
 use crate::util;
 use crate::winapi;
 
-pub fn root(app: &mut PathMoverApp, ui: &mut egui::Ui) {
+pub fn root(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
     top_bar(app, ui);
     status_bar(app, ui);
     if app.show_log {
@@ -41,8 +41,8 @@ pub fn root(app: &mut PathMoverApp, ui: &mut egui::Ui) {
 
 // --------------------------------------------------------------- top bar --
 
-fn top_bar(app: &mut PathMoverApp, ui: &mut egui::Ui) {
-    egui::Panel::top("pathmover_top")
+fn top_bar(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+    egui::Panel::top("linkvault_top")
         .frame(
             egui::Frame::new()
                 .fill(PANEL)
@@ -52,7 +52,7 @@ fn top_bar(app: &mut PathMoverApp, ui: &mut egui::Ui) {
         .show(ui, |ui| {
             ui.horizontal(|ui| {
                 ui.label(
-                    egui::RichText::new("PathMover")
+                    egui::RichText::new("LinkVault")
                         .size(19.0)
                         .strong()
                         .color(ACCENT),
@@ -109,8 +109,8 @@ fn top_bar(app: &mut PathMoverApp, ui: &mut egui::Ui) {
 
 // ------------------------------------------------------------ status bar --
 
-fn status_bar(app: &mut PathMoverApp, ui: &mut egui::Ui) {
-    egui::Panel::bottom("pathmover_status")
+fn status_bar(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+    egui::Panel::bottom("linkvault_status")
         .frame(
             egui::Frame::new()
                 .fill(PANEL)
@@ -166,8 +166,8 @@ fn status_bar(app: &mut PathMoverApp, ui: &mut egui::Ui) {
 
 // ------------------------------------------------------------- log panel --
 
-fn log_panel(app: &mut PathMoverApp, ui: &mut egui::Ui) {
-    egui::Panel::bottom("pathmover_log")
+fn log_panel(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
+    egui::Panel::bottom("linkvault_log")
         .resizable(true)
         .default_size(150.0)
         .max_size(420.0)
@@ -227,7 +227,7 @@ fn log_panel(app: &mut PathMoverApp, ui: &mut egui::Ui) {
 
 // ---------------------------------------------------------------- dialogs --
 
-fn confirm_move_dialog(app: &mut PathMoverApp, ctx: &egui::Context) {
+fn confirm_move_dialog(app: &mut LinkVaultApp, ctx: &egui::Context) {
     let Some(job) = app.confirm_move.clone() else {
         return;
     };
@@ -347,7 +347,7 @@ fn confirm_move_dialog(app: &mut PathMoverApp, ctx: &egui::Context) {
     }
 }
 
-fn confirm_restore_dialog(app: &mut PathMoverApp, ctx: &egui::Context) {
+fn confirm_restore_dialog(app: &mut LinkVaultApp, ctx: &egui::Context) {
     let Some(job) = app.confirm_restore.clone() else {
         return;
     };

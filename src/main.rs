@@ -1,11 +1,11 @@
-//! PathMover — move heavy AppData folders to another drive via NTFS junctions.
+//! LinkVault — move heavy AppData folders to another drive via NTFS junctions.
 //!
 //! Windows-only desktop app built with `egui`/`eframe`.
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 #[cfg(not(windows))]
-compile_error!("PathMover is a Windows-only application (NTFS junctions, Win32 API).");
+compile_error!("LinkVault is a Windows-only application (NTFS junctions, Win32 API).");
 
 mod app;
 mod cleaner;
@@ -31,6 +31,6 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         app::APP_NAME,
         options,
-        Box::new(|cc| Ok(Box::new(app::PathMoverApp::new(cc)))),
+        Box::new(|cc| Ok(Box::new(app::LinkVaultApp::new(cc)))),
     )
 }

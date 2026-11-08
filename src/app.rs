@@ -15,7 +15,7 @@ use crate::scanner::{self, FolderEntry, ScanProgress, Scope};
 use crate::util;
 use crate::winapi;
 
-pub const APP_NAME: &str = "PathMover";
+pub const APP_NAME: &str = "LinkVault";
 pub const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -163,7 +163,7 @@ pub struct ConfirmRestore {
     pub delete_target: bool,
 }
 
-pub struct PathMoverApp {
+pub struct LinkVaultApp {
     pub config: Config,
     pub tab: Tab,
     pub folders: Vec<FolderEntry>,
@@ -191,7 +191,7 @@ pub struct PathMoverApp {
     pub scanned_once: bool,
 }
 
-impl PathMoverApp {
+impl LinkVaultApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
         Self::new_with_ctx(&cc.egui_ctx)
     }
@@ -240,7 +240,7 @@ impl PathMoverApp {
         app.log_push(
             LogKind::Info,
             format!(
-                "PathMover {APP_VERSION} spuštěn{}",
+                "LinkVault {APP_VERSION} spuštěn{}",
                 if app.is_admin {
                     " (zvýšená oprávnění)"
                 } else {
@@ -893,13 +893,13 @@ fn contains_ci(haystack: &str, needle: &str) -> bool {
     haystack.to_lowercase().contains(needle)
 }
 
-impl eframe::App for PathMoverApp {
+impl eframe::App for LinkVaultApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         self.draw(ui);
     }
 }
 
-impl PathMoverApp {
+impl LinkVaultApp {
     /// Draw one frame into `ui`. Separated from the `eframe::App` impl so the
     /// layout can be driven from tests without an `eframe::Frame`.
     pub fn draw(&mut self, ui: &mut egui::Ui) {
@@ -931,7 +931,7 @@ mod tests {
     #[test]
     fn follow_up_is_not_started_while_a_task_is_running() {
         let ctx = egui::Context::default();
-        let mut app = PathMoverApp::new_with_ctx(&ctx);
+        let mut app = LinkVaultApp::new_with_ctx(&ctx);
 
         // A start request while busy must be dropped (this is exactly why the
         // follow-up has to be deferred until the slot is free).

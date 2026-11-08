@@ -66,7 +66,7 @@ pub fn user_profile_root() -> Option<PathBuf> {
         .filter(|p| p.is_dir())
 }
 
-/// Folders directly in `%USERPROFILE%` that PathMover never moves.
+/// Folders directly in `%USERPROFILE%` that LinkVault never moves.
 ///
 /// Moving these either breaks the profile itself (AppData, registry hives),
 /// breaks Known Folder redirection / cloud sync (Desktop, Documents, OneDrive)
@@ -117,7 +117,7 @@ pub fn profile_block_reason(name: &str) -> Option<String> {
 /// Where a folder currently lives.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FolderState {
-    /// A normal directory on C: that PathMover can relocate.
+    /// A normal directory on C: that LinkVault can relocate.
     Local,
     /// A junction pointing at another drive.
     Junction {
@@ -173,17 +173,17 @@ pub struct FolderEntry {
     pub size: u64,
     pub files: u64,
     pub state: FolderState,
-    /// Matching record from config.toml (PathMover moved it).
+    /// Matching record from config.toml (LinkVault moved it).
     pub managed: Option<MovedEntry>,
 }
 
 impl FolderEntry {
-    /// Can PathMover move it right now?
+    /// Can LinkVault move it right now?
     pub fn can_move(&self) -> bool {
         self.state.is_local()
     }
 
-    /// Can PathMover bring it back to C:?
+    /// Can LinkVault bring it back to C:?
     pub fn can_restore(&self) -> bool {
         self.managed.is_some() && self.state.is_moved()
     }
@@ -226,7 +226,7 @@ pub fn appdata_roots() -> Vec<(Scope, PathBuf)> {
 }
 
 /// True when `path` lives inside one of the AppData branches (safety guard:
-/// PathMover must never touch anything else).
+/// LinkVault must never touch anything else).
 pub fn is_under_appdata(path: &Path) -> bool {
     appdata_roots()
         .iter()
@@ -240,7 +240,7 @@ pub fn is_under_profile(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
-/// True when `path` is a folder PathMover is allowed to move: inside AppData,
+/// True when `path` is a folder LinkVault is allowed to move: inside AppData,
 /// or a non-blocked top-level folder of the user profile.
 pub fn is_movable_source(path: &Path) -> bool {
     if is_under_appdata(path) {
@@ -510,7 +510,7 @@ mod tests {
 
     #[test]
     fn local_directories_are_classified() {
-        let dir = std::env::temp_dir().join("pathmover-test-classify");
+        let dir = std::env::temp_dir().join("linkvault-test-classify");
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         assert_eq!(classify(&dir), FolderState::Local);
