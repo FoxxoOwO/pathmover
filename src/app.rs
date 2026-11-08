@@ -82,6 +82,13 @@ pub enum TaskKind {
     Restore,
 }
 
+/// A refresh that should run once the current task has released its slot.
+#[derive(Debug, Clone, Copy)]
+enum FollowUp {
+    Scan,
+    CacheScan,
+}
+
 impl TaskKind {
     pub fn verb(self) -> &'static str {
         match self {
@@ -171,6 +178,7 @@ pub struct PathMoverApp {
     pub min_size_mb: f32,
     pub scope_local: bool,
     pub scope_roaming: bool,
+    pub scope_profile: bool,
     pub only_moved: bool,
     pub sort: SortMode,
     pub target_root_edit: String,
@@ -212,6 +220,7 @@ impl PathMoverApp {
             min_size_mb: 0.0,
             scope_local: true,
             scope_roaming: true,
+            scope_profile: true,
             only_moved: false,
             sort: SortMode::SizeDesc,
             target_root_edit,
@@ -548,6 +557,10 @@ impl PathMoverApp {
     /// Drain all pending messages from the running task.
     pub fn poll(&mut self, ctx: &egui::Context) {
         let mut finished = false;
+        // A follow-up task must not be started while `self.task` is still set:
+        // `start_*` bails out when `busy()` is true, so the request would be
+        // silently dropped. Collected here and started after the slot is free.
+        let mut follow_up: Option<FollowUp> = None;
         let mut drain: Vec<Msg> = Vec::new();
         if let Some(task) = &mut self.task {
             while let Ok(msg) = task.rx.try_recv() {
@@ -657,7 +670,7 @@ impl PathMoverApp {
                     }
                     self.clean_report = Some(report);
                     self.status = "Čištění dokončeno".to_string();
-                    self.start_cache_scan(ctx);
+                    follow_up = Some(FollowUp::CacheScan);
                     finished = true;
                 }
                 Msg::MoveEvent(event) => self.apply_reloc_event(event),
@@ -686,7 +699,7 @@ impl PathMoverApp {
                                 self.log_push(LogKind::Error, err);
                             }
                             self.toast(LogKind::Good, "Přesun dokončen");
-                            self.start_scan(ctx);
+                            follow_up = Some(FollowUp::Scan);
                         }
                         Err(err) => {
                             self.log_push(LogKind::Error, err.clone());
@@ -704,7 +717,7 @@ impl PathMoverApp {
                             }
                             self.log_push(LogKind::Good, format!("{name} vráceno na disk C:"));
                             self.toast(LogKind::Good, "Složka vrácena na C:");
-                            self.start_scan(ctx);
+                            follow_up = Some(FollowUp::Scan);
                         }
                         Err(err) => {
                             self.log_push(LogKind::Error, err.clone());
@@ -719,6 +732,12 @@ impl PathMoverApp {
         if finished {
             self.task = None;
             self.status = "Připraven".to_string();
+            // The task slot is free now, so these actually start.
+            match follow_up {
+                Some(FollowUp::Scan) => self.start_scan(ctx),
+                Some(FollowUp::CacheScan) => self.start_cache_scan(ctx),
+                None => {}
+            }
         }
     }
 
@@ -780,6 +799,7 @@ impl PathMoverApp {
                 let scope_ok = match f.scope {
                     Scope::Local => self.scope_local,
                     Scope::Roaming => self.scope_roaming,
+                    Scope::Profile => self.scope_profile,
                 };
                 if !scope_ok {
                     return false;
@@ -793,8 +813,10 @@ impl PathMoverApp {
                 if needle.is_empty() {
                     return true;
                 }
-                f.name.to_lowercase().contains(&needle)
-                    || f.path.to_string_lossy().to_lowercase().contains(&needle)
+                // Case-insensitive substring match without allocating a
+                // lowercase copy of the whole path on every frame.
+                contains_ci(&f.name, &needle)
+                    || contains_ci(&f.path.to_string_lossy(), &needle)
             })
             .map(|(i, _)| i)
             .collect();
@@ -849,14 +871,26 @@ impl PathMoverApp {
 }
 
 fn clock_now() -> String {
-    let now = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default();
-    let secs = now.as_secs();
-    let h = (secs / 3600) % 24;
-    let m = (secs / 60) % 60;
-    let s = secs % 60;
-    format!("{h:02}:{m:02}:{s:02}")
+    winapi::local_clock()
+}
+
+/// ASCII-case-insensitive substring search. `needle` must already be
+/// lowercase; this avoids allocating a lowercased copy of `haystack`.
+fn contains_ci(haystack: &str, needle: &str) -> bool {
+    if needle.is_empty() {
+        return true;
+    }
+    if haystack.is_ascii() && needle.is_ascii() {
+        let h = haystack.as_bytes();
+        let n = needle.as_bytes();
+        if n.len() > h.len() {
+            return false;
+        }
+        return h
+            .windows(n.len())
+            .any(|w| w.iter().zip(n).all(|(a, b)| a.to_ascii_lowercase() == *b));
+    }
+    haystack.to_lowercase().contains(needle)
 }
 
 impl eframe::App for PathMoverApp {
@@ -876,5 +910,36 @@ impl PathMoverApp {
         if self.task.is_some() {
             ctx.request_repaint_after(Duration::from_millis(100));
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn case_insensitive_search_matches() {
+        assert!(contains_ci("Slack", "slack"));
+        assert!(contains_ci(r"C:\Users\me\AppData\Local\Slack", r"appdata\local"));
+        assert!(contains_ci("anything", ""));
+        assert!(!contains_ci("Slack", "teams"));
+        assert!(!contains_ci("ab", "abc"));
+        // Non-ASCII falls back to the allocating path and must still work.
+        assert!(contains_ci("Žluťoučký", "žluť"));
+    }
+
+    #[test]
+    fn follow_up_is_not_started_while_a_task_is_running() {
+        let ctx = egui::Context::default();
+        let mut app = PathMoverApp::new_with_ctx(&ctx);
+
+        // A start request while busy must be dropped (this is exactly why the
+        // follow-up has to be deferred until the slot is free).
+        let (_tx, rx) = channel();
+        app.begin_task(TaskKind::Clean, "test", rx, Arc::new(AtomicBool::new(false)));
+        assert!(app.busy());
+        app.start_scan(&ctx);
+        app.start_cache_scan(&ctx);
+        assert_eq!(app.task.as_ref().map(|t| t.kind), Some(TaskKind::Clean));
     }
 }

@@ -49,15 +49,26 @@ Aplikace má tři záložky.
 
 ### 2. AppData & Symlinky (Relocation Engine)
 
-- Prohledá `%LOCALAPPDATA%` a `%APPDATA%`, změří velikost každé složky prvního řádu
-  (paralelně přes `rayon` + `walkdir`) a seřadí je **od největší po nejmenší**.
-- Filtry: hledání podle názvu, minimální velikost (logaritmický slider v MB), scope Local/Roaming,
-  „jen přesunuté“, řazení podle velikosti / názvu / stavu.
+- Prohledá `%LOCALAPPDATA%`, `%APPDATA%` a **kořen profilu** `%USERPROFILE%`, změří velikost
+  každé složky prvního řádu (paralelně přes `rayon` + `walkdir`) a seřadí je
+  **od největší po nejmenší**.
+- Filtry: hledání podle názvu, minimální velikost (logaritmický slider v MB),
+  scope Local / Roaming / Profil, „jen přesunuté“, řazení podle velikosti / názvu / stavu.
+- Tři scopes: `Local`, `Roaming` a `Profile` (složky přímo v kořeni profilu jako
+  `.gradle`, `.cargo`, `.vscode`, `.android`). Přesouvají se do `<cíl>/Local`,
+  `<cíl>/Roaming` a `<cíl>/Profile`.
+- **Bloklist profilu:** složky, jejichž přesun rozbíjí profil, Known Folder redirection nebo
+  cloudový sync, přesunout nelze — zobrazí se jako `Vyloučeno` s důvodem: `AppData`, `Desktop`,
+  `Documents`, `Downloads`, `Pictures`, `Music`, `Videos`, `Contacts`, `Links`, `Favorites`,
+  `Saved Games`, `Searches`, kompatibilitní junctiony (`Application Data`, `Local Settings`,
+  `Cookies`, …), `NTUSER.DAT*`, `OneDrive*`, `.ssh` a `.gnupg`.
+  Kořen profilu samotný přesunout nelze nikdy.
 - **Indikátor stavu** u každé složky:
   - `Na disku C:` – data jsou fyzicky na systémovém disku,
   - `Přesunuto (D:)` – junction je aktivní a míří na očekávaný cíl,
   - `Odkaz nefunkční` / `Poškozeno` – reparse point existuje, ale cíl chybí nebo je jiný,
   - `Složka nenalezena` – záznam v konfiguraci bez dat na disku.
+  - `Vyloučeno` – složka profilu na bloklistu (přesun není povolen).
 - **Přesun** jedním tlačítkem s potvrzovacím dialogem, který ukáže zdroj, cíl, velikost i volné místo.
 - **Rollback** – tlačítko *Vrátit na C:…* zkopíruje data zpět, odstraní junction a obnoví původní složku.
   Volitelně lze smazat i data na cílovém disku.
@@ -214,7 +225,7 @@ keep_backup = false      # ponechat .bak zálohu po přesunu
 clean_logs = false       # zahrnout logs/crash dumps do hledání cache
 
 [[entries]]
-scope = "Local"          # Local | Roaming
+scope = "Local"          # Local | Roaming | Profile
 name = "Slack"
 source = "C:\\Users\\Honza\\AppData\\Local\\Slack"
 target = "D:\\AppDataMoved\\Local\\Slack"
@@ -251,6 +262,9 @@ Soubor se vytvoří při prvním uložení (změna cíle, přesun, rollback). P�
 - **OneDrive / Dropbox / Google Drive** složky: přesun může rozbít synchronizaci. Nedoporučeno.
 - **Nepřesouvejte** `AppData\Local\Packages`, `Microsoft`, `Temp` a složky, které používají
   služby běžící pod SYSTEM — junction pod nimi může selhat kvůli oprávněním.
+- **Složky profilu** vyloučené bloklistem nejde přesunout vůbec (viz výše); ostatní složky
+  profilu přesunout lze, ale platí u nich dvojnásob „zavřete aplikaci“ — řada nástrojů
+  (`git`, `cargo`, `gradle`) si drží soubory otevřené a přesun za běhu selže.
 - **Rollback potřebuje volné místo na C:** (velikost složky + rezerva).
 - **Antivirus** může blokovat zápis reparse pointu; v takovém případě pomůže výjimka.
 - Aplikace záměrně **nemaže** data bez potvrzení a nikdy nemaže obsah, který leží mimo `AppData`.

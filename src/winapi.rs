@@ -367,6 +367,27 @@ pub fn is_elevated() -> bool {
     unsafe { IsUserAnAdmin() != 0 }
 }
 
+/// Current wall-clock time in the user's time zone as `HH:MM:SS`.
+///
+/// Uses `GetLocalTime` rather than dividing the Unix timestamp, which would
+/// always print UTC and be off by the timezone offset.
+pub fn local_clock() -> String {
+    use windows_sys::Win32::Foundation::SYSTEMTIME;
+    use windows_sys::Win32::System::SystemInformation::GetLocalTime;
+    let mut st = SYSTEMTIME {
+        wYear: 0,
+        wMonth: 0,
+        wDayOfWeek: 0,
+        wDay: 0,
+        wHour: 0,
+        wMinute: 0,
+        wSecond: 0,
+        wMilliseconds: 0,
+    };
+    unsafe { GetLocalTime(&mut st) };
+    format!("{:02}:{:02}:{:02}", st.wHour, st.wMinute, st.wSecond)
+}
+
 /// Relaunch PathMover through the UAC prompt. Returns true when the new
 /// process was started (the caller should exit afterwards).
 pub fn relaunch_as_admin() -> bool {
@@ -439,6 +460,58 @@ mod tests {
         assert_eq!(
             extended(Path::new(r"\\server\share")).to_string_lossy(),
             r"\\?\UNC\server\share"
+        );
+    }
+}
+
+#[cfg(test)]
+mod clock_tests {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    /// `local_clock` must report the user's local wall clock, not UTC.
+    ///
+    /// The timezone offset is read from Windows itself, so the assertion is
+    /// exact for every timezone (including half-hour offsets and DST) and
+    /// still fails if the old UTC-only implementation comes back.
+    #[test]
+    fn local_clock_reports_local_time_not_utc() {
+        use windows_sys::Win32::System::Time::GetTimeZoneInformation;
+        use windows_sys::Win32::System::Time::TIME_ZONE_INFORMATION;
+
+        let mut tz = TIME_ZONE_INFORMATION {
+            Bias: 0,
+            StandardName: [0; 32],
+            StandardDate: Default::default(),
+            StandardBias: 0,
+            DaylightName: [0; 32],
+            DaylightDate: Default::default(),
+            DaylightBias: 0,
+        };
+        // TIME_ZONE_ID_INVALID == 0xFFFFFFFF
+        let id = unsafe { GetTimeZoneInformation(&mut tz) };
+        if id == u32::MAX {
+            return; // unknown timezone, nothing to compare against
+        }
+        // 2 == TIME_ZONE_ID_DAYLIGHT
+        let bias_minutes = tz.Bias + if id == 2 { tz.DaylightBias } else { tz.StandardBias };
+
+        let utc_secs = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        let expected_local = utc_secs as i64 - (bias_minutes as i64) * 60;
+        let expected_hour = (expected_local.rem_euclid(86_400) / 3600) as u32;
+
+        let printed = super::local_clock();
+        let hour: u32 = printed
+            .split(':')
+            .next()
+            .and_then(|h| h.parse().ok())
+            .unwrap_or_else(|| panic!("unexpected format: {printed}"));
+
+        assert_eq!(
+            hour, expected_hour,
+            "local_clock() = {printed} but local hour should be {expected_hour} (bias {bias_minutes} min)"
         );
     }
 }

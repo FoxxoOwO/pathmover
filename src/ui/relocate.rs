@@ -134,17 +134,28 @@ fn toolbar(app: &mut PathMoverApp, ui: &mut egui::Ui) {
         ui.horizontal_wrapped(|ui| {
             ui.checkbox(&mut app.scope_local, Scope::Local.label());
             ui.checkbox(&mut app.scope_roaming, Scope::Roaming.label());
+            ui.checkbox(&mut app.scope_profile, Scope::Profile.label());
             ui.checkbox(&mut app.only_moved, "Jen přesunuté");
             ui.separator();
-            if ui
-                .add(widgets::ghost_button("Otevřít AppData"))
-                .clicked()
-            {
+            if ui.add(widgets::ghost_button("Otevřít AppData")).clicked() {
                 let root = std::env::var_os("USERPROFILE")
                     .map(|p| PathBuf::from(p).join("AppData"))
                     .unwrap_or_else(|| PathBuf::from("C:\\Users"));
                 if let Err(err) = winapi::open_in_explorer(&root) {
                     app.log_push(crate::app::LogKind::Error, err.to_string());
+                }
+            }
+            if ui.add(widgets::ghost_button("Otevřít profil")).clicked() {
+                match crate::scanner::user_profile_root() {
+                    Some(root) => {
+                        if let Err(err) = winapi::open_in_explorer(&root) {
+                            app.log_push(crate::app::LogKind::Error, err.to_string());
+                        }
+                    }
+                    None => app.log_push(
+                        crate::app::LogKind::Warn,
+                        "Proměnná USERPROFILE není nastavena",
+                    ),
                 }
             }
         });
@@ -231,11 +242,12 @@ fn folder_row(
             |ui| {
                 ui.set_min_width(cols.name);
                 ui.horizontal(|ui| {
-                    let (scope_label, scope_color) = match folder.scope {
-                        Scope::Local => ("Local", ACCENT),
-                        Scope::Roaming => ("Roaming", egui::Color32::from_rgb(167, 139, 250)),
+                    let scope_color = match folder.scope {
+                        Scope::Local => ACCENT,
+                        Scope::Roaming => egui::Color32::from_rgb(167, 139, 250),
+                        Scope::Profile => GOOD,
                     };
-                    widgets::chip(ui, scope_label, scope_color);
+                    widgets::chip(ui, folder.scope.badge(), scope_color);
                     ui.add(
                         egui::Label::new(
                             egui::RichText::new(&folder.name)
@@ -304,6 +316,7 @@ fn folder_row(
             }
             FolderState::Broken { reason } => (format!("Poškozeno: {reason}"), ERROR),
             FolderState::Missing => ("Složka nenalezena".to_string(), MUTED),
+            FolderState::Blocked { reason } => (format!("Vyloučeno: {reason}"), MUTED),
         };
         ui.allocate_ui_with_layout(
             egui::vec2(cols.state, 0.0),
@@ -360,7 +373,7 @@ fn folder_row(
                             }
                         }
                     }
-                    FolderState::Missing => {
+                    FolderState::Missing | FolderState::Blocked { .. } => {
                         ui.add_enabled(false, widgets::ghost_button("—"));
                     }
                 }

@@ -189,8 +189,10 @@ mod tests {
 
     #[test]
     fn roundtrips_through_toml() {
-        let mut cfg = Config::default();
-        cfg.target_root = r"D:\AppDataMoved".to_string();
+        let mut cfg = Config {
+            target_root: r"D:\AppDataMoved".to_string(),
+            ..Default::default()
+        };
         cfg.add_entry(MovedEntry {
             scope: "Local".into(),
             name: "Slack".into(),

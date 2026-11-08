@@ -144,9 +144,9 @@ pub fn move_folder(
         ));
     }
 
-    if !scanner::is_under_appdata(source) {
+    if !scanner::is_movable_source(source) {
         return Err(format!(
-            "{} není v AppData - PathMover přesouvá jen AppData",
+            "{} není v AppData ani v povolené části profilu - PathMover toto nepodporuje",
             source.display()
         ));
     }
@@ -381,8 +381,8 @@ pub fn restore(
     if !target.is_dir() {
         return Err(format!("data na cíli chybí: {}", target.display()));
     }
-    if !scanner::is_under_appdata(&source) {
-        return Err(format!("{} není v AppData", source.display()));
+    if !scanner::is_movable_source(&source) {
+        return Err(format!("{} není v AppData ani v povolené části profilu", source.display()));
     }
 
     let TreeSize { bytes, files, .. } = fsutil::dir_size(&target);

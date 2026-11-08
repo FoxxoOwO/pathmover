@@ -118,7 +118,7 @@ fn summary_row(app: &mut PathMoverApp, ui: &mut egui::Ui) {
         ACCENT,
     ));
     tiles.push(("Nalezená cache", util::human_size(cache_total), WARN));
-    tiles.push(("Složek v AppData", app.folders.len().to_string(), TEXT));
+    tiles.push(("Složek ke zvážení", app.folders.len().to_string(), TEXT));
     widgets::stat_row(ui, &tiles);
 
     if let Some(disk) = &system {
@@ -253,8 +253,9 @@ fn target_settings(app: &mut PathMoverApp, ui: &mut egui::Ui) {
         ui.add_space(4.0);
         widgets::hint(
             ui,
-            "Složky se přesouvají do podadresářů Local\\<název> a Roaming\\<název> v této cestě. \
-             Cíl musí ležet na jiném disku než C:, jinak přesun nemá smysl.",
+            "Složky se přesouvají do podadresářů Local\\<název>, Roaming\\<název> \
+             a Profile\\<název> v této cestě. Cíl musí ležet na jiném disku než C:, \
+             jinak přesun nemá smysl.",
         );
         ui.add_space(6.0);
         ui.horizontal_wrapped(|ui| {
@@ -320,8 +321,9 @@ fn quick_actions(app: &mut PathMoverApp, ui: &mut egui::Ui, ctx: egui::Context) 
         ui.add_space(6.0);
         widgets::hint(
             ui,
-            "Sken projde AppData\\Local a AppData\\Roaming, změří velikost každé složky a zjistí, \
-             které už jsou přesunuté přes junction.",
+            "Sken projde AppData\\Local, AppData\\Roaming a kořen profilu uživatele, změří \
+             velikost každé složky a zjistí, které už jsou přesunuté přes junction. Systémové \
+             složky profilu (AppData, Desktop, Documents, OneDrive, .ssh, …) jsou vyloučené.",
         );
         ui.add_space(4.0);
         ui.horizontal_wrapped(|ui| {
