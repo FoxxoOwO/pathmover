@@ -22,11 +22,11 @@ enum RowAction {
 
 pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
     toolbar(app, ui);
-    ui.add_space(6.0);
+    ui.add_space(8.0);
 
     if let Some(task) = &app.task {
         widgets::progress_row(ui, &task.progress);
-        ui.add_space(6.0);
+        ui.add_space(8.0);
     }
 
     let rows = app.visible_folders();
@@ -43,7 +43,7 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
             widgets::empty_state(
                 ui,
                 "Zatím nebylo skenováno",
-                "Spusťte sken tlačítkem výše — projde AppData a změří velikost složek.",
+                "Spusťte sken tlačítkem výše — projde AppData a změní velikost složek.",
             );
         }
         history_section(app, ui);
@@ -71,7 +71,7 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
             );
         }
     });
-    ui.add_space(6.0);
+    ui.add_space(8.0);
 
     let mut pending: Option<RowAction> = None;
     let ctx = ui.ctx().clone();
@@ -94,7 +94,7 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
         apply_action(app, ui, &ctx, action);
     }
 
-    ui.add_space(10.0);
+    ui.add_space(12.0);
     history_section(app, ui);
 }
 
@@ -109,20 +109,22 @@ fn toolbar(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
                 app.start_scan(&ctx);
             }
             ui.separator();
-            ui.label(egui::RichText::new("Hledat:").size(12.0).color(MUTED));
+            ui.label(egui::RichText::new("Hledat:").size(13.0).color(MUTED));
             ui.add(
                 egui::TextEdit::singleline(&mut app.search)
                     .hint_text("název složky")
-                    .desired_width(160.0),
+                    .desired_width(200.0)
+                    .margin(egui::Margin::symmetric(8, 6)),
             );
-            ui.label(egui::RichText::new("Min. velikost:").size(12.0).color(MUTED));
+            ui.label(egui::RichText::new("Min. velikost:").size(13.0).color(MUTED));
             ui.add(
                 egui::Slider::new(&mut app.min_size_mb, 0.0..=5000.0)
                     .suffix(" MB")
-                    .logarithmic(true),
+                    .logarithmic(true)
+                    .text_color(ON_SURFACE),
             );
             egui::ComboBox::from_id_salt("sort_combo")
-                .width(150.0)
+                .width(160.0)
                 .selected_text(app.sort.label())
                 .show_ui(ui, |ui| {
                     for mode in [SortMode::SizeDesc, SortMode::NameAsc, SortMode::StatusFirst] {
@@ -130,7 +132,7 @@ fn toolbar(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
                     }
                 });
         });
-        ui.add_space(4.0);
+        ui.add_space(6.0);
         ui.horizontal_wrapped(|ui| {
             ui.checkbox(&mut app.scope_local, Scope::Local.label());
             ui.checkbox(&mut app.scope_roaming, Scope::Roaming.label());
@@ -197,7 +199,7 @@ impl Columns {
 fn table_header(ui: &mut egui::Ui) {
     // Same horizontal padding as `list_row` so header and rows line up.
     egui::Frame::new()
-        .inner_margin(egui::Margin::symmetric(10, 0))
+        .inner_margin(egui::Margin::symmetric(12, 0))
         .show(ui, |ui| {
             ui.set_min_width(ui.available_width());
             let cols = Columns::for_width(ui.available_width());
@@ -218,7 +220,8 @@ fn header_cell(ui: &mut egui::Ui, text: &str, width: f32) {
         |ui| {
             ui.label(
                 egui::RichText::new(text.to_uppercase())
-                    .size(10.0)
+                    .size(10.5)
+                    .strong()
                     .color(MUTED),
             );
         },
@@ -251,9 +254,9 @@ fn folder_row(
                     ui.add(
                         egui::Label::new(
                             egui::RichText::new(&folder.name)
-                                .size(13.5)
+                                .size(14.0)
                                 .strong()
-                                .color(TEXT),
+                                .color(ON_SURFACE),
                         )
                         .truncate(),
                     );
@@ -270,7 +273,7 @@ fn folder_row(
                 ui.add(
                     egui::Label::new(
                         egui::RichText::new(&path_text)
-                            .size(10.5)
+                            .size(11.0)
                             .monospace()
                             .color(MUTED),
                     )
@@ -288,14 +291,14 @@ fn folder_row(
                 ui.set_min_width(cols.size);
                 ui.label(
                     egui::RichText::new(util::short_size(folder.size))
-                        .size(13.0)
+                        .size(13.5)
                         .monospace()
-                        .color(TEXT),
+                        .color(ON_SURFACE),
                 )
                 .on_hover_text(util::human_size(folder.size));
                 ui.label(
                     egui::RichText::new(format!("{} souborů", folder.files))
-                        .size(10.5)
+                        .size(11.0)
                         .color(MUTED),
                 );
             },
@@ -329,7 +332,7 @@ fn folder_row(
                     let target_text = target.display().to_string();
                     ui.add(
                         egui::Label::new(
-                            egui::RichText::new(&target_text).size(10.0).color(MUTED),
+                            egui::RichText::new(&target_text).size(10.5).color(MUTED),
                         )
                         .truncate(),
                     )
@@ -423,7 +426,7 @@ fn history_section(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
     if app.config.entries.is_empty() {
         return;
     }
-    ui.add_space(6.0);
+    ui.add_space(8.0);
     widgets::section_title(
         ui,
         "Historie přesunů",
@@ -444,9 +447,9 @@ fn history_section(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
                     ui.horizontal_wrapped(|ui| {
                         ui.label(
                             egui::RichText::new(&entry.name)
-                                .size(12.5)
+                                .size(13.0)
                                 .strong()
-                                .color(TEXT),
+                                .color(ON_SURFACE),
                         );
                         widgets::chip(ui, &entry.scope, MUTED);
                         widgets::chip(ui, &util::human_size(entry.bytes), ACCENT);
@@ -483,12 +486,12 @@ fn history_section(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
                             entry.source,
                             entry.target
                         ))
-                        .size(10.0)
+                        .size(10.5)
                         .monospace()
                         .color(MUTED),
                     );
                 });
-                ui.add_space(3.0);
+                ui.add_space(4.0);
             }
         });
 

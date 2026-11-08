@@ -12,10 +12,10 @@ use crate::util;
 /// panels line up on both edges instead of hugging their content.
 pub fn card<R>(ui: &mut egui::Ui, add: impl FnOnce(&mut egui::Ui) -> R) -> R {
     egui::Frame::new()
-        .fill(CARD)
-        .stroke(egui::Stroke::new(1.0, BORDER))
-        .corner_radius(egui::CornerRadius::same(10))
-        .inner_margin(egui::Margin::same(14))
+        .fill(SURFACE_2)
+        .stroke(egui::Stroke::new(1.0, OUTLINE))
+        .corner_radius(egui::CornerRadius::same(12))
+        .inner_margin(egui::Margin::same(16))
         .show(ui, |ui| {
             ui.set_min_width(ui.available_width());
             add(ui)
@@ -26,10 +26,10 @@ pub fn card<R>(ui: &mut egui::Ui, add: impl FnOnce(&mut egui::Ui) -> R) -> R {
 /// Card that highlights when the pointer is over it (used for clickable rows).
 pub fn card_hover<R>(ui: &mut egui::Ui, add: impl FnOnce(&mut egui::Ui) -> R) -> R {
     let frame = egui::Frame::new()
-        .fill(CARD)
-        .stroke(egui::Stroke::new(1.0, BORDER))
-        .corner_radius(egui::CornerRadius::same(8))
-        .inner_margin(egui::Margin::same(10))
+        .fill(SURFACE_2)
+        .stroke(egui::Stroke::new(1.0, OUTLINE))
+        .corner_radius(egui::CornerRadius::same(10))
+        .inner_margin(egui::Margin::same(12))
         .show(ui, |ui| {
             ui.set_min_width(ui.available_width());
             add(ui)
@@ -37,7 +37,7 @@ pub fn card_hover<R>(ui: &mut egui::Ui, add: impl FnOnce(&mut egui::Ui) -> R) ->
     if ui.rect_contains_pointer(frame.response.rect) {
         ui.painter().rect_stroke(
             frame.response.rect,
-            egui::CornerRadius::same(8),
+            egui::CornerRadius::same(10),
             egui::Stroke::new(1.0, CARD_HOVER),
             egui::StrokeKind::Inside,
         );
@@ -53,12 +53,12 @@ pub fn list_row<R>(
 ) -> R {
     let frame = egui::Frame::new()
         .fill(if striped {
-            CARD.gamma_multiply(0.55)
+            SURFACE_2.gamma_multiply(0.6)
         } else {
             egui::Color32::TRANSPARENT
         })
-        .corner_radius(egui::CornerRadius::same(8))
-        .inner_margin(egui::Margin::symmetric(10, 7))
+        .corner_radius(egui::CornerRadius::same(10))
+        .inner_margin(egui::Margin::symmetric(12, 9))
         .show(ui, |ui| {
             ui.set_min_width(ui.available_width());
             add(ui)
@@ -66,7 +66,7 @@ pub fn list_row<R>(
     if ui.rect_contains_pointer(frame.response.rect) {
         ui.painter().rect_stroke(
             frame.response.rect,
-            egui::CornerRadius::same(8),
+            egui::CornerRadius::same(10),
             egui::Stroke::new(1.0, CARD_HOVER),
             egui::StrokeKind::Inside,
         );
@@ -76,23 +76,23 @@ pub fn list_row<R>(
 
 pub fn section_title(ui: &mut egui::Ui, title: &str, subtitle: Option<&str>) {
     ui.horizontal(|ui| {
-        ui.label(egui::RichText::new(title).size(17.0).strong().color(TEXT));
+        ui.label(egui::RichText::new(title).size(18.0).strong().color(ON_SURFACE));
         if let Some(sub) = subtitle {
-            ui.label(egui::RichText::new(sub).size(12.0).color(MUTED));
+            ui.label(egui::RichText::new(sub).size(12.5).color(MUTED));
         }
     });
-    ui.add_space(2.0);
+    ui.add_space(4.0);
 }
 
 /// Small colored label, e.g. state badges.
 pub fn chip(ui: &mut egui::Ui, text: &str, color: egui::Color32) -> egui::Response {
     egui::Frame::new()
-        .fill(color.gamma_multiply(0.16))
-        .stroke(egui::Stroke::new(1.0, color.gamma_multiply(0.55)))
-        .corner_radius(egui::CornerRadius::same(6))
-        .inner_margin(egui::Margin::symmetric(7, 2))
+        .fill(color.gamma_multiply(0.18))
+        .stroke(egui::Stroke::new(1.0, color.gamma_multiply(0.5)))
+        .corner_radius(egui::CornerRadius::same(8))
+        .inner_margin(egui::Margin::symmetric(9, 3))
         .show(ui, |ui| {
-            ui.label(egui::RichText::new(text).size(11.5).color(color));
+            ui.label(egui::RichText::new(text).size(12.0).color(color));
         })
         .response
 }
@@ -101,15 +101,16 @@ pub fn chip(ui: &mut egui::Ui, text: &str, color: egui::Color32) -> egui::Respon
 /// its parent - put it in `stat_row` (or a column) to get equal tiles.
 pub fn stat_tile(ui: &mut egui::Ui, caption: &str, value: &str, color: egui::Color32) {
     egui::Frame::new()
-        .fill(PANEL)
-        .stroke(egui::Stroke::new(1.0, BORDER))
-        .corner_radius(egui::CornerRadius::same(9))
-        .inner_margin(egui::Margin::symmetric(14, 10))
+        .fill(SURFACE_1)
+        .stroke(egui::Stroke::new(1.0, OUTLINE))
+        .corner_radius(egui::CornerRadius::same(12))
+        .inner_margin(egui::Margin::symmetric(18, 14))
         .show(ui, |ui| {
             ui.set_min_width(ui.available_width());
-            ui.vertical(|ui| {
-                ui.label(egui::RichText::new(caption).size(11.0).color(MUTED));
-                ui.label(egui::RichText::new(value).size(19.0).strong().color(color));
+            ui.vertical_centered(|ui| {
+                ui.label(egui::RichText::new(caption).size(11.5).color(MUTED));
+                ui.add_space(2.0);
+                ui.label(egui::RichText::new(value).size(20.0).strong().color(color));
             });
         });
 }
@@ -130,17 +131,17 @@ pub fn stat_row(ui: &mut egui::Ui, tiles: &[(&str, String, egui::Color32)]) {
 /// Horizontal usage bar (used for disk fill).
 pub fn usage_bar(ui: &mut egui::Ui, fraction: f32, color: egui::Color32) -> egui::Response {
     let width = ui.available_width().max(60.0);
-    let height = 8.0;
+    let height = 10.0;
     let (rect, response) =
         ui.allocate_exact_size(egui::vec2(width, height), egui::Sense::hover());
     let painter = ui.painter();
-    painter.rect_filled(rect, egui::CornerRadius::same(4), TRACK);
+    painter.rect_filled(rect, egui::CornerRadius::same(5), TRACK);
     let filled = egui::Rect::from_min_size(
         rect.min,
         egui::vec2(rect.width() * fraction.clamp(0.0, 1.0), rect.height()),
     );
     if filled.width() > 0.5 {
-        painter.rect_filled(filled, egui::CornerRadius::same(4), color);
+        painter.rect_filled(filled, egui::CornerRadius::same(5), color);
     }
     response
 }
@@ -151,27 +152,30 @@ pub fn progress_row(ui: &mut egui::Ui, progress: &Progress) {
         ui.horizontal(|ui| {
             ui.label(
                 egui::RichText::new(&progress.phase)
-                    .size(13.0)
+                    .size(13.5)
                     .strong()
-                    .color(TEXT),
+                    .color(ON_SURFACE),
             );
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 let pct = progress.percent_text();
                 if !pct.is_empty() {
-                    ui.label(egui::RichText::new(pct).size(12.0).color(MUTED));
+                    ui.label(egui::RichText::new(pct).size(12.5).color(MUTED));
                 }
             });
         });
+        ui.add_space(4.0);
         ui.add(
             egui::ProgressBar::new(progress.fraction())
-                .desired_height(10.0)
+                .desired_height(12.0)
                 .fill(ACCENT)
+                .corner_radius(egui::CornerRadius::same(6))
                 .animate(progress.total == 0),
         );
         if !progress.detail.is_empty() {
+            ui.add_space(4.0);
             ui.label(
                 egui::RichText::new(util::ellipsize_middle(&progress.detail, 110))
-                    .size(11.0)
+                    .size(11.5)
                     .color(MUTED),
             );
         }
@@ -179,31 +183,31 @@ pub fn progress_row(ui: &mut egui::Ui, progress: &Progress) {
 }
 
 pub fn primary_button(text: &str) -> egui::Button<'static> {
-    egui::Button::new(egui::RichText::new(text.to_owned()).color(egui::Color32::WHITE))
+    egui::Button::new(egui::RichText::new(text.to_owned()).size(13.5).color(egui::Color32::WHITE))
         .fill(ACCENT_DIM)
         .stroke(egui::Stroke::new(1.0, ACCENT))
-        .corner_radius(egui::CornerRadius::same(7))
-        .min_size(egui::vec2(0.0, 30.0))
+        .corner_radius(egui::CornerRadius::same(8))
+        .min_size(egui::vec2(0.0, 34.0))
 }
 
 pub fn danger_button(text: &str) -> egui::Button<'static> {
-    egui::Button::new(egui::RichText::new(text.to_owned()).color(egui::Color32::WHITE))
-        .fill(egui::Color32::from_rgb(120, 32, 30))
+    egui::Button::new(egui::RichText::new(text.to_owned()).size(13.0).color(egui::Color32::WHITE))
+        .fill(ERROR_DIM)
         .stroke(egui::Stroke::new(1.0, ERROR.gamma_multiply(0.7)))
-        .corner_radius(egui::CornerRadius::same(7))
-        .min_size(egui::vec2(0.0, 26.0))
+        .corner_radius(egui::CornerRadius::same(8))
+        .min_size(egui::vec2(0.0, 30.0))
 }
 
 pub fn ghost_button(text: &str) -> egui::Button<'static> {
-    egui::Button::new(egui::RichText::new(text.to_owned()).size(12.5).color(TEXT))
+    egui::Button::new(egui::RichText::new(text.to_owned()).size(12.5).color(ON_SURFACE))
         .fill(egui::Color32::TRANSPARENT)
-        .stroke(egui::Stroke::new(1.0, BORDER))
-        .corner_radius(egui::CornerRadius::same(6))
+        .stroke(egui::Stroke::new(1.0, OUTLINE))
+        .corner_radius(egui::CornerRadius::same(8))
 }
 
 pub fn log_color(kind: LogKind) -> egui::Color32 {
     match kind {
-        LogKind::Info => TEXT,
+        LogKind::Info => ON_SURFACE_VARIANT,
         LogKind::Good => GOOD,
         LogKind::Warn => WARN,
         LogKind::Error => ERROR,
@@ -221,14 +225,15 @@ pub fn log_icon(kind: LogKind) -> &'static str {
 
 /// Muted single-line hint text.
 pub fn hint(ui: &mut egui::Ui, text: impl Into<String>) {
-    ui.label(egui::RichText::new(text).size(11.5).color(MUTED));
+    ui.label(egui::RichText::new(text).size(12.0).color(MUTED));
 }
 
 /// A label/value pair laid out on one row.
 pub fn kv(ui: &mut egui::Ui, key: &str, value: &str) {
     ui.horizontal(|ui| {
-        ui.label(egui::RichText::new(key).size(11.5).color(MUTED));
-        ui.label(egui::RichText::new(value).size(11.5).color(TEXT));
+        ui.label(egui::RichText::new(key).size(12.0).color(MUTED));
+        ui.add_space(8.0);
+        ui.label(egui::RichText::new(value).size(12.0).color(ON_SURFACE));
     });
 }
 
@@ -236,21 +241,22 @@ pub fn kv(ui: &mut egui::Ui, key: &str, value: &str) {
 /// dashed-looking box so an empty tab still fills the window.
 pub fn empty_state(ui: &mut egui::Ui, title: &str, hint_text: &str) {
     egui::Frame::new()
-        .fill(CARD.gamma_multiply(0.35))
-        .stroke(egui::Stroke::new(1.0, BORDER))
-        .corner_radius(egui::CornerRadius::same(10))
-        .inner_margin(egui::Margin::same(18))
+        .fill(SURFACE_2.gamma_multiply(0.4))
+        .stroke(egui::Stroke::new(1.0, OUTLINE))
+        .corner_radius(egui::CornerRadius::same(14))
+        .inner_margin(egui::Margin::same(24))
         .show(ui, |ui| {
             ui.set_min_width(ui.available_width());
             ui.vertical_centered(|ui| {
-                ui.add_space(18.0);
-                ui.label(egui::RichText::new(title).size(15.0).color(MUTED));
-                ui.add_space(4.0);
-                ui.label(egui::RichText::new(hint_text).size(12.0).color(MUTED));
-                ui.add_space(18.0);
+                ui.add_space(16.0);
+                ui.label(egui::RichText::new(title).size(16.0).color(MUTED));
+                ui.add_space(6.0);
+                ui.label(egui::RichText::new(hint_text).size(12.5).color(MUTED));
+                ui.add_space(16.0);
             });
         });
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;

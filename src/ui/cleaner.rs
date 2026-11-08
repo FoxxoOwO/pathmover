@@ -55,7 +55,7 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
                 app.cancel_task();
             }
         });
-        ui.add_space(4.0);
+        ui.add_space(6.0);
         w::hint(
             ui,
             "Mažou se pouze soubory uvnitř těchto složek, ne složky samotné. Soubory zamčené \
@@ -64,11 +64,11 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
     });
 
     if let Some(task) = &app.task {
-        ui.add_space(6.0);
+        ui.add_space(8.0);
         w::progress_row(ui, &task.progress);
     }
 
-    ui.add_space(8.0);
+    ui.add_space(10.0);
 
     let total: u64 = app.caches.iter().map(|c| c.size).sum();
     let files: u64 = app.caches.iter().map(|c| c.files).sum();
@@ -79,17 +79,17 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
             util::human_size(app.selected_cache_bytes()),
             ERROR,
         ),
-        ("Cache složek", app.caches.len().to_string(), TEXT),
+        ("Cache složek", app.caches.len().to_string(), ON_SURFACE_VARIANT),
         ("Souborů", files.to_string(), MUTED),
     ];
     w::stat_row(ui, &tiles);
 
     if let Some(report) = app.clean_report.clone() {
-        ui.add_space(8.0);
+        ui.add_space(10.0);
         report_card(ui, &report);
     }
 
-    ui.add_space(8.0);
+    ui.add_space(10.0);
 
     if app.caches.is_empty() {
         w::empty_state(
@@ -124,9 +124,9 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
                                 w::chip(ui, &cache.app, ACCENT);
                                 ui.label(
                                     egui::RichText::new(&cache.kind)
-                                        .size(12.5)
+                                        .size(13.0)
                                         .strong()
-                                        .color(TEXT),
+                                        .color(ON_SURFACE),
                                 );
                                 w::chip(
                                     ui,
@@ -150,7 +150,7 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
                                     &cache.display_path(),
                                     100,
                                 ))
-                                .size(10.0)
+                                .size(11.0)
                                 .monospace()
                                 .color(MUTED),
                             )
@@ -163,7 +163,7 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
                         });
                     });
                 });
-                ui.add_space(3.0);
+                ui.add_space(4.0);
             }
         });
 
@@ -176,59 +176,54 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
 
 fn report_card(ui: &mut egui::Ui, report: &crate::cleaner::CleanReport) {
     let color = if report.success() { GOOD } else { WARN };
-    egui::Frame::new()
-        .fill(color.gamma_multiply(0.10))
-        .stroke(egui::Stroke::new(1.0, color.gamma_multiply(0.55)))
-        .corner_radius(egui::CornerRadius::same(9))
-        .inner_margin(egui::Margin::same(12))
-        .show(ui, |ui| {
-            ui.set_min_width(ui.available_width());
-            ui.horizontal_wrapped(|ui| {
-                ui.label(
-                    egui::RichText::new("Poslední čištění")
-                        .strong()
-                        .color(color),
-                );
-                w::chip(
-                    ui,
-                    &format!("uvolněno {}", util::human_size(report.freed)),
-                    GOOD,
-                );
-                w::chip(
-                    ui,
-                    &format!("{} souborů v {} složkách", report.deleted, report.dirs),
-                    MUTED,
-                );
-                if report.cancelled {
-                    w::chip(ui, "zrušeno", WARN);
-                }
-                if !report.errors.is_empty() {
-                    w::chip(ui, &format!("{} chyb", report.errors.len()), ERROR);
-                }
-            });
+    w::card(ui, |ui| {
+        ui.horizontal_wrapped(|ui| {
+            ui.label(
+                egui::RichText::new("Poslední čištění")
+                    .size(14.0)
+                    .strong()
+                    .color(color),
+            );
+            w::chip(
+                ui,
+                &format!("uvolněno {}", util::human_size(report.freed)),
+                GOOD,
+            );
+            w::chip(
+                ui,
+                &format!("{} souborů v {} složkách", report.deleted, report.dirs),
+                MUTED,
+            );
+            if report.cancelled {
+                w::chip(ui, "zrušeno", WARN);
+            }
             if !report.errors.is_empty() {
-                ui.add_space(4.0);
-                egui::CollapsingHeader::new(
-                    egui::RichText::new("Podrobnosti chyb")
-                        .size(12.0)
-                        .color(MUTED),
-                )
-                .id_salt("clean_errors")
-                .show(ui, |ui| {
-                    egui::ScrollArea::vertical()
-                        .id_salt("clean_errors_scroll")
-                        .max_height(120.0)
-                        .show(ui, |ui| {
-                            for err in &report.errors {
-                                ui.label(
-                                    egui::RichText::new(err)
-                                        .size(10.5)
-                                        .monospace()
-                                        .color(ERROR),
-                                );
-                            }
-                        });
-                });
+                w::chip(ui, &format!("{} chyb", report.errors.len()), ERROR);
             }
         });
+        if !report.errors.is_empty() {
+            ui.add_space(6.0);
+            egui::CollapsingHeader::new(
+                egui::RichText::new("Podrobnosti chyb")
+                    .size(12.5)
+                    .color(MUTED),
+            )
+            .id_salt("clean_errors")
+            .show(ui, |ui| {
+                egui::ScrollArea::vertical()
+                    .id_salt("clean_errors_scroll")
+                    .max_height(140.0)
+                    .show(ui, |ui| {
+                        for err in &report.errors {
+                            ui.label(
+                                egui::RichText::new(err)
+                                    .size(11.0)
+                                    .monospace()
+                                    .color(ERROR),
+                            );
+                        }
+                    });
+            });
+        }
+    });
 }

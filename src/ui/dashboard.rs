@@ -12,15 +12,15 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
     egui::ScrollArea::vertical()
         .auto_shrink([false, false])
         .show(ui, |ui| {
-            ui.add_space(4.0);
+            ui.add_space(8.0);
 
             if !app.is_admin {
                 admin_banner(app, ui);
-                ui.add_space(8.0);
+                ui.add_space(12.0);
             }
 
             summary_row(app, ui);
-            ui.add_space(10.0);
+            ui.add_space(14.0);
 
             widgets::section_title(
                 ui,
@@ -30,64 +30,68 @@ pub fn ui(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
             let disks = app.disks.clone();
             for disk in &disks {
                 disk_card(app, ui, disk);
-                ui.add_space(6.0);
+                ui.add_space(8.0);
             }
             if disks.is_empty() {
                 widgets::hint(ui, "Nepodařilo se načíst informace o discích.");
             }
 
-            ui.add_space(10.0);
+            ui.add_space(14.0);
             widgets::section_title(ui, "Cílový adresář pro přesunutá data", None);
             target_settings(app, ui);
 
-            ui.add_space(10.0);
+            ui.add_space(14.0);
             widgets::section_title(ui, "Rychlé akce", None);
             let ctx = ui.ctx().clone();
             quick_actions(app, ui, ctx);
 
-            ui.add_space(16.0);
+            ui.add_space(24.0);
         });
 }
 
 fn admin_banner(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
     egui::Frame::new()
-        .fill(WARN.gamma_multiply(0.12))
-        .stroke(egui::Stroke::new(1.0, WARN.gamma_multiply(0.6)))
-        .corner_radius(egui::CornerRadius::same(9))
-        .inner_margin(egui::Margin::same(12))
+        .fill(WARN)
+        .stroke(egui::Stroke::new(1.0, WARN_DIM))
+        .corner_radius(egui::CornerRadius::same(12))
+        .inner_margin(egui::Margin::same(14))
         .show(ui, |ui| {
             ui.set_min_width(ui.available_width());
-            ui.horizontal_wrapped(|ui| {
-                ui.label(egui::RichText::new("⚠").size(18.0).color(WARN));
+            ui.horizontal(|ui| {
+                ui.label(egui::RichText::new("⚠").size(20.0).color(WARN));
+                ui.add_space(10.0);
                 ui.vertical(|ui| {
                     ui.label(
                         egui::RichText::new("Aplikace neběží jako správce")
+                            .size(14.0)
                             .strong()
                             .color(WARN),
                     );
+                    ui.add_space(2.0);
                     widgets::hint(
                         ui,
                         "Vytváření junction odkazů a práce s některými soubory v AppData vyžaduje \
                          zvýšená oprávnění. Skenování a čištění cache funguje i bez nich.",
                     );
                 });
-                ui.add_space(8.0);
-                if ui
-                    .add(widgets::ghost_button("Restartovat jako správce"))
-                    .clicked()
-                {
-                    if winapi::relaunch_as_admin() {
-                        app.log_push(
-                            crate::app::LogKind::Good,
-                            "Spouštím novou instanci se zvýšenými právy…",
-                        );
-                    } else {
-                        app.log_push(
-                            crate::app::LogKind::Error,
-                            "Nepodařilo se spustit aplikaci jako správce (ShellExecuteW selhal).",
-                        );
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if ui
+                        .add(widgets::ghost_button("Restartovat jako správce"))
+                        .clicked()
+                    {
+                        if winapi::relaunch_as_admin() {
+                            app.log_push(
+                                crate::app::LogKind::Good,
+                                "Spouštím novou instanci se zvýšenými právy…",
+                            );
+                        } else {
+                            app.log_push(
+                                crate::app::LogKind::Error,
+                                "Nepodařilo se spustit aplikaci jako správce (ShellExecuteW selhal).",
+                            );
+                        }
                     }
-                }
+                });
             });
         });
 }
@@ -110,7 +114,7 @@ fn summary_row(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
             util::human_size(disk.free),
             if frac > 0.9 { ERROR } else { GOOD },
         ));
-        tiles.push(("Celkem C:", util::human_size(disk.total), TEXT));
+        tiles.push(("Celkem C:", util::human_size(disk.total), ON_SURFACE_VARIANT));
     }
     tiles.push((
         "Přesunuto na jiné disky",
@@ -118,7 +122,7 @@ fn summary_row(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
         ACCENT,
     ));
     tiles.push(("Nalezená cache", util::human_size(cache_total), WARN));
-    tiles.push(("Složek ke zvážení", app.folders.len().to_string(), TEXT));
+    tiles.push(("Složek ke zvážení", app.folders.len().to_string(), ON_SURFACE_VARIANT));
     widgets::stat_row(ui, &tiles);
 
     if let Some(disk) = &system {
@@ -128,7 +132,7 @@ fn summary_row(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
         } else {
             0.0
         };
-        ui.add_space(8.0);
+        ui.add_space(12.0);
         widgets::usage_bar(
             ui,
             frac,
@@ -140,7 +144,7 @@ fn summary_row(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
                 ACCENT
             },
         );
-        ui.add_space(2.0);
+        ui.add_space(4.0);
         widgets::hint(
             ui,
             format!(
@@ -163,20 +167,25 @@ fn disk_card(app: &mut LinkVaultApp, ui: &mut egui::Ui, disk: &crate::app::DiskI
 
     widgets::card(ui, |ui| {
         ui.horizontal(|ui| {
-            ui.label(
-                egui::RichText::new(&disk.name)
-                    .size(15.0)
-                    .strong()
-                    .color(TEXT),
-            );
-            if disk.is_system {
-                widgets::chip(ui, "SYSTÉMOVÝ", ACCENT);
-            }
-            if app.config.target_root.to_ascii_uppercase().starts_with(
-                &disk.mount.to_ascii_uppercase(),
-            ) {
-                widgets::chip(ui, "CÍL PŘESUNU", GOOD);
-            }
+            ui.vertical(|ui| {
+                ui.label(
+                    egui::RichText::new(&disk.name)
+                        .size(16.0)
+                        .strong()
+                        .color(ON_SURFACE),
+                );
+                ui.add_space(2.0);
+                ui.horizontal(|ui| {
+                    if disk.is_system {
+                        widgets::chip(ui, "SYSTÉMOVÝ", ACCENT);
+                    }
+                    if app.config.target_root.to_ascii_uppercase().starts_with(
+                        &disk.mount.to_ascii_uppercase(),
+                    ) {
+                        widgets::chip(ui, "CÍL PŘESUNU", GOOD);
+                    }
+                });
+            });
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.label(
                     egui::RichText::new(format!(
@@ -184,12 +193,12 @@ fn disk_card(app: &mut LinkVaultApp, ui: &mut egui::Ui, disk: &crate::app::DiskI
                         util::human_size(disk.free),
                         util::human_size(disk.total)
                     ))
-                    .size(12.5)
+                    .size(13.0)
                     .color(MUTED),
                 );
             });
         });
-        ui.add_space(4.0);
+        ui.add_space(8.0);
         widgets::usage_bar(
             ui,
             frac,
@@ -202,7 +211,7 @@ fn disk_card(app: &mut LinkVaultApp, ui: &mut egui::Ui, disk: &crate::app::DiskI
             },
         );
         if !disk.is_system {
-            ui.add_space(6.0);
+            ui.add_space(10.0);
             ui.horizontal(|ui| {
                 if ui
                     .add(widgets::ghost_button("Použít jako cíl přesunu"))
@@ -233,13 +242,14 @@ fn disk_card(app: &mut LinkVaultApp, ui: &mut egui::Ui, disk: &crate::app::DiskI
 fn target_settings(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
     widgets::card(ui, |ui| {
         ui.horizontal(|ui| {
-            ui.label(egui::RichText::new("Cesta:").size(12.5).color(MUTED));
+            ui.label(egui::RichText::new("Cesta:").size(13.0).color(MUTED));
             // Leave room for the save button so the row spans the whole card.
             let edit_width = (ui.available_width() - 96.0).max(180.0);
             ui.add(
                 egui::TextEdit::singleline(&mut app.target_root_edit)
                     .desired_width(edit_width)
-                    .font(egui::TextStyle::Monospace),
+                    .font(egui::TextStyle::Monospace)
+                    .margin(egui::Margin::symmetric(8, 6)),
             );
             let changed = app.target_root_edit != app.config.target_root;
             if ui
@@ -250,14 +260,14 @@ fn target_settings(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
                 app.save_config();
             }
         });
-        ui.add_space(4.0);
+        ui.add_space(8.0);
         widgets::hint(
             ui,
             "Složky se přesouvají do podadresářů Local\\<název>, Roaming\\<název> \
              a Profile\\<název> v této cestě. Cíl musí ležet na jiném disku než C:, \
              jinak přesun nemá smysl.",
         );
-        ui.add_space(6.0);
+        ui.add_space(8.0);
         ui.horizontal_wrapped(|ui| {
             if ui
                 .add(widgets::ghost_button("Doporučit největší disk"))
@@ -289,7 +299,7 @@ fn target_settings(app: &mut LinkVaultApp, ui: &mut egui::Ui) {
             }
             ui.checkbox(
                 &mut app.config.keep_backup,
-                egui::RichText::new("Ponechat .bak zálohu po přesunu").size(12.5),
+                egui::RichText::new("Ponechat .bak zálohu po přesunu").size(13.0),
             );
         });
     });
@@ -318,14 +328,14 @@ fn quick_actions(app: &mut LinkVaultApp, ui: &mut egui::Ui, ctx: egui::Context) 
                 app.refresh_disks();
             }
         });
-        ui.add_space(6.0);
+        ui.add_space(8.0);
         widgets::hint(
             ui,
             "Sken projde AppData\\Local, AppData\\Roaming a kořen profilu uživatele, změří \
              velikost každé složky a zjistí, které už jsou přesunuté přes junction. Systémové \
              složky profilu (AppData, Desktop, Documents, OneDrive, .ssh, …) jsou vyloučené.",
         );
-        ui.add_space(4.0);
+        ui.add_space(8.0);
         ui.horizontal_wrapped(|ui| {
             widgets::kv(ui, "Stav:", &app.status);
             widgets::kv(ui, "Uložené přesuny:", &app.config.entries.len().to_string());

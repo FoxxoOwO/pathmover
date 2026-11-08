@@ -6,19 +6,29 @@ use eframe::egui;
 
 // ---------------------------------------------------------------- palette --
 
-pub const BG: egui::Color32 = egui::Color32::from_rgb(13, 17, 23);
-pub const PANEL: egui::Color32 = egui::Color32::from_rgb(21, 27, 36);
-pub const CARD: egui::Color32 = egui::Color32::from_rgb(27, 35, 47);
-pub const CARD_HOVER: egui::Color32 = egui::Color32::from_rgb(34, 44, 59);
-pub const BORDER: egui::Color32 = egui::Color32::from_rgb(44, 57, 74);
-pub const TEXT: egui::Color32 = egui::Color32::from_rgb(226, 234, 244);
-pub const MUTED: egui::Color32 = egui::Color32::from_rgb(138, 152, 170);
-pub const ACCENT: egui::Color32 = egui::Color32::from_rgb(88, 148, 255);
-pub const ACCENT_DIM: egui::Color32 = egui::Color32::from_rgb(46, 88, 168);
-pub const GOOD: egui::Color32 = egui::Color32::from_rgb(63, 185, 110);
-pub const WARN: egui::Color32 = egui::Color32::from_rgb(226, 164, 61);
-pub const ERROR: egui::Color32 = egui::Color32::from_rgb(248, 81, 73);
-pub const TRACK: egui::Color32 = egui::Color32::from_rgb(16, 21, 28);
+pub const BG: egui::Color32 = egui::Color32::from_rgb(15, 18, 24);
+pub const PANEL: egui::Color32 = egui::Color32::from_rgb(22, 27, 35);
+pub const CARD: egui::Color32 = egui::Color32::from_rgb(28, 35, 45);
+pub const CARD_HOVER: egui::Color32 = egui::Color32::from_rgb(35, 44, 56);
+pub const BORDER: egui::Color32 = egui::Color32::from_rgb(48, 60, 76);
+pub const TEXT: egui::Color32 = egui::Color32::from_rgb(230, 238, 248);
+pub const TEXT_SUBTLE: egui::Color32 = egui::Color32::from_rgb(170, 185, 200);
+pub const MUTED: egui::Color32 = egui::Color32::from_rgb(120, 135, 155);
+pub const ACCENT: egui::Color32 = egui::Color32::from_rgb(90, 155, 255);
+pub const ACCENT_DIM: egui::Color32 = egui::Color32::from_rgb(52, 95, 175);
+pub const GOOD: egui::Color32 = egui::Color32::from_rgb(70, 195, 120);
+pub const WARN: egui::Color32 = egui::Color32::from_rgb(235, 175, 70);
+pub const WARN_DIM: egui::Color32 = egui::Color32::from_rgb(100, 75, 25);
+pub const ERROR: egui::Color32 = egui::Color32::from_rgb(250, 95, 85);
+pub const ERROR_DIM: egui::Color32 = egui::Color32::from_rgb(110, 35, 30);
+pub const TRACK: egui::Color32 = egui::Color32::from_rgb(18, 22, 28);
+
+// Semantic token aliases for consistent usage
+pub const SURFACE_1: egui::Color32 = PANEL;
+pub const SURFACE_2: egui::Color32 = CARD;
+pub const ON_SURFACE: egui::Color32 = TEXT;
+pub const ON_SURFACE_VARIANT: egui::Color32 = TEXT_SUBTLE;
+pub const OUTLINE: egui::Color32 = BORDER;
 
 /// Install the LinkVault theme into an egui context.
 pub fn install(ctx: &egui::Context) {
@@ -26,7 +36,7 @@ pub fn install(ctx: &egui::Context) {
     ctx.set_theme(egui::ThemePreference::Dark);
 
     let text_styles = [
-        (egui::TextStyle::Heading, egui::FontId::new(21.0, egui::FontFamily::Proportional)),
+        (egui::TextStyle::Heading, egui::FontId::new(22.0, egui::FontFamily::Proportional)),
         (egui::TextStyle::Body, egui::FontId::new(14.0, egui::FontFamily::Proportional)),
         (egui::TextStyle::Button, egui::FontId::new(14.0, egui::FontFamily::Proportional)),
         (egui::TextStyle::Small, egui::FontId::new(11.5, egui::FontFamily::Proportional)),
@@ -37,21 +47,21 @@ pub fn install(ctx: &egui::Context) {
         style.visuals.dark_mode = true;
         style.visuals.panel_fill = BG;
         style.visuals.window_fill = PANEL;
-        style.visuals.extreme_bg_color = egui::Color32::from_rgb(10, 14, 19);
+        style.visuals.extreme_bg_color = egui::Color32::from_rgb(10, 12, 16);
         style.visuals.faint_bg_color = egui::Color32::from_rgb(24, 31, 41);
         style.visuals.selection.bg_fill = ACCENT_DIM;
         style.visuals.selection.stroke = egui::Stroke::new(1.0, TEXT);
         style.visuals.hyperlink_color = ACCENT;
         style.visuals.warn_fg_color = WARN;
         style.visuals.error_fg_color = ERROR;
-        style.visuals.window_corner_radius = egui::CornerRadius::same(10);
+        style.visuals.window_corner_radius = egui::CornerRadius::same(12);
         style.visuals.window_stroke = egui::Stroke::new(1.0, BORDER);
         style.visuals.menu_corner_radius = egui::CornerRadius::same(8);
         style.visuals.popup_shadow = egui::epaint::Shadow {
-            offset: [0, 6],
-            blur: 20,
+            offset: [0, 8],
+            blur: 24,
             spread: 0,
-            color: egui::Color32::from_black_alpha(120),
+            color: egui::Color32::from_black_alpha(140),
         };
 
         let widgets = &mut style.visuals.widgets;
@@ -59,32 +69,33 @@ pub fn install(ctx: &egui::Context) {
         widgets.noninteractive.weak_bg_fill = PANEL;
         widgets.noninteractive.bg_stroke = egui::Stroke::new(1.0, BORDER);
         widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0, TEXT);
-        widgets.noninteractive.corner_radius = egui::CornerRadius::same(6);
+        widgets.noninteractive.corner_radius = egui::CornerRadius::same(8);
 
         widgets.inactive.bg_fill = egui::Color32::from_rgb(32, 41, 54);
         widgets.inactive.weak_bg_fill = egui::Color32::from_rgb(32, 41, 54);
         widgets.inactive.bg_stroke = egui::Stroke::new(1.0, BORDER);
         widgets.inactive.fg_stroke = egui::Stroke::new(1.0, TEXT);
-        widgets.inactive.corner_radius = egui::CornerRadius::same(6);
+        widgets.inactive.corner_radius = egui::CornerRadius::same(8);
 
         widgets.hovered.bg_fill = egui::Color32::from_rgb(45, 58, 76);
         widgets.hovered.weak_bg_fill = egui::Color32::from_rgb(45, 58, 76);
         widgets.hovered.bg_stroke = egui::Stroke::new(1.0, ACCENT);
         widgets.hovered.fg_stroke = egui::Stroke::new(1.0, egui::Color32::WHITE);
-        widgets.hovered.corner_radius = egui::CornerRadius::same(6);
+        widgets.hovered.corner_radius = egui::CornerRadius::same(8);
 
         widgets.active.bg_fill = ACCENT_DIM;
         widgets.active.weak_bg_fill = ACCENT_DIM;
         widgets.active.bg_stroke = egui::Stroke::new(1.0, ACCENT);
         widgets.active.fg_stroke = egui::Stroke::new(1.0, egui::Color32::WHITE);
-        widgets.active.corner_radius = egui::CornerRadius::same(6);
+        widgets.active.corner_radius = egui::CornerRadius::same(8);
 
         widgets.open = widgets.hovered;
 
-        style.spacing.item_spacing = egui::vec2(8.0, 8.0);
-        style.spacing.button_padding = egui::vec2(10.0, 5.0);
-        style.spacing.interact_size.y = 26.0;
-        style.spacing.indent = 16.0;
+        style.spacing.item_spacing = egui::vec2(10.0, 8.0);
+        style.spacing.button_padding = egui::vec2(12.0, 6.0);
+        style.spacing.interact_size.y = 30.0;
+        style.spacing.indent = 18.0;
+        style.spacing.window_margin = egui::Margin::same(8);
         for (kind, font) in &text_styles {
             style.text_styles.insert(kind.clone(), font.clone());
         }
